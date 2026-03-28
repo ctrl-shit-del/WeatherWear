@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SORS — Dashboard</title>
+    <meta name="description" content="Smart Outfit Recommendation System — your AI-powered wardrobe companion." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="app-shell">
+
+        <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">👗</div>
+                <div>
+                    <div class="sidebar-logo-text">SORS</div>
+                    <span class="sidebar-logo-sub">Smart Outfit System</span>
+                </div>
+            </div>
+            <div class="sidebar-nav">
+                <span class="nav-section-label">Main</span>
+                <div class="nav-item active" id="nav-dashboard" onclick="switchView('dashboard')">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </div>
+                <div class="nav-item" id="nav-recommend" onclick="switchView('recommend')">
+                    <span class="nav-icon">✨</span> Recommendations
+                    <span class="nav-badge" id="rec-badge" style="display:none">New</span>
+                </div>
+                <span class="nav-section-label">Wardrobe</span>
+                <div class="nav-item" id="nav-wardrobe" onclick="switchView('wardrobe')">
+                    <span class="nav-icon">👚</span> My Wardrobe
+                    <span class="nav-badge" id="wardrobe-count-badge">…</span>
+                </div>
+                <div class="nav-item" id="nav-analytics" onclick="switchView('analytics')">
+                    <span class="nav-icon">📊</span> Analytics
+                </div>
+                <span class="nav-section-label">System</span>
+                <div class="nav-item" id="nav-settings" onclick="switchView('settings')">
+                    <span class="nav-icon">⚙️</span> Settings
+                </div>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar" id="user-avatar-text">A</div>
+                <div class="user-info">
+                    <div class="user-name" id="sidebar-user-name">Loading…</div>
+                    <div class="user-role">Wardrobe Member</div>
+                </div>
+                <button class="btn-logout" title="Sign out" onclick="doLogout()">↩</button>
+            </div>
+        </nav>
+
+        <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+        <div class="main-content">
+
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div>
+                    <div class="topbar-title" id="topbar-title">Dashboard</div>
+                    <div class="topbar-subtitle" id="topbar-subtitle">Good morning! Ready to dress smart?</div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary btn-sm" onclick="switchView('recommend')">✨ Get
+                        Recommendations</button>
+                </div>
+            </div>
+
+            <!-- ──── DASHBOARD VIEW ──── -->
+            <div class="page-view active" id="view-dashboard">
+                <div class="page-header">
+                    <div class="page-title">Good <span id="time-greeting">day</span>, <span
+                            id="dash-user-name">there</span> 👋</div>
+                    <div class="page-subtitle">Here's what's happening with your wardrobe today.</div>
+                </div>
+
+                <!-- Weather Quick Search -->
+                <div class="weather-widget fade-in" style="margin-bottom:24px;">
+                    <div class="weather-search-row">
+                        <input type="text" class="weather-input" id="dash-city-input"
+                            placeholder="🔍  Search city (e.g. Mumbai, London, Dubai…)" />
+                        <button class="btn-weather-search" onclick="fetchWeather('dash')">Get Weather</button>
+                    </div>
+                    <div id="dash-weather-display" style="display:none;">
+                        <div class="weather-data">
+                            <div class="weather-main">
+                                <div class="weather-icon-lg" id="dash-weather-icon">🌤️</div>
+                                <div class="weather-temp"><span id="dash-temp">--</span><sup>°C</sup></div>
+                                <div class="weather-city" id="dash-city-name">--</div>
+                                <div class="weather-desc" id="dash-weather-desc">--</div>
+                            </div>
+                            <div class="weather-stats">
+                                <div class="weather-stat">
+                                    <span class="weather-stat-icon">🌡️</span>
+                                    <span class="weather-stat-label">Feels like</span>
+                                    <span class="weather-stat-value" id="dash-feels-like">--</span>
+                                </div>
+                                <div class="weather-stat">
+                                    <span class="weather-stat-icon">💧</span>
+                                    <span class="weather-stat-label">Humidity</span>
+                                    <span class="weather-stat-value" id="dash-humidity">--</span>
+                                </div>
+                                <div class="weather-stat">
+                                    <span class="weather-stat-icon">💨</span>
+                                    <span class="weather-stat-label">Wind speed</span>
+                                    <span class="weather-stat-value" id="dash-wind">--</span>
+                                </div>
+                                <div class="weather-stat">
+                                    <span class="weather-stat-icon">🌧️</span>
+                                    <span class="weather-stat-label">Rain probability</span>
+                                    <span class="weather-stat-value" id="dash-rain">--</span>
+                                </div>
+                                <div class="weather-stat">
+                                    <span class="weather-stat-icon">☀️</span>
+                                    <span class="weather-stat-label">UV Index</span>
+                                    <span class="weather-stat-value" id="dash-uv">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="weather-warnings" id="dash-warnings"></div>
+                        <div style="margin-top:16px;display:flex;gap:12px;align-items:center;">
+                            <button class="btn btn-primary btn-sm" onclick="goRecommendWithWeather()">✨ Get Outfits for
+                                This Weather</button>
+                            <span style="font-size:11px;color:var(--text-muted);" id="dash-weather-source"></span>
+                        </div>
+                    </div>
+                    <div id="dash-weather-loading" style="display:none;" class="loading-overlay">
+                        <div class="spinner"></div> Fetching weather…
+                    </div>
+                    <div id="dash-weather-empty"
+                        style="text-align:center;padding:16px 0;color:var(--text-muted);font-size:13px;">
+                        🌍 Enter a city to get real-time weather data
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid-4" style="margin-bottom:24px;">
+                    <div class="metric-card fade-in">
+                        <div class="metric-icon">👚</div>
+                        <div class="metric-value" id="stat-wardrobe-count">…</div>
+                        <div class="metric-label">Wardrobe Items</div>
+                    </div>
+                    <div class="metric-card fade-in">
+                        <div class="metric-icon">✨</div>
+                        <div class="metric-value" id="stat-recommendations">20</div>
+                        <div class="metric-label">Outfit Combos</div>
+                    </div>
+                    <div class="metric-card fade-in">
+                        <div class="metric-icon">📈</div>
+                        <div class="metric-value" id="stat-total-wears">…</div>
+                        <div class="metric-label">Total Wears Tracked</div>
+                    </div>
+                    <div class="metric-card fade-in">
+                        <div class="metric-icon">♻️</div>
+                        <div class="metric-value" id="stat-eco-score">8.2</div>
+                        <div class="metric-label">Avg Eco Score</div>
+                    </div>
+                </div>
+
+                <!-- Quick Tips + Most Worn -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="section-header">
+                            <div class="section-title">🔥 Most Worn Items</div>
+                            <span class="section-action" onclick="switchView('analytics')">View analytics →</span>
+                        </div>
+                        <div class="analytics-list" id="dash-most-worn">
+                            <div class="loading-overlay">
+                                <div class="spinner"></div> Loading…
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:12px;">💡 Style Tips</div>
+                        <div style="display:flex;flex-direction:column;gap:10px;" id="dash-tips">
+                            <div class="weather-warning"
+                                style="border-left-color:var(--accent-purple);background:rgba(139,92,246,0.07);">Fetch
+                                weather above to get personalized tips for today.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── RECOMMENDATIONS VIEW ──── -->
+            <div class="page-view" id="view-recommend">
+                <div class="page-header">
+                    <div class="page-title">✨ Outfit Recommendations</div>
+                    <div class="page-subtitle">AI-powered outfits tailored for today's weather & your wardrobe.</div>
+                </div>
+
+                <!-- Weather Panel -->
+                <div class="card fade-in" style="margin-bottom:24px;">
+                    <div class="section-header">
+                        <div class="section-title">🌤️ Weather for Recommendations</div>
+                    </div>
+                    <div class="weather-search-row">
+                        <input type="text" class="weather-input" id="rec-city-input" placeholder="🔍  Enter city name…"
+                            style="background:var(--bg-input);border-color:var(--border-color);" />
+                        <button class="btn-weather-search" onclick="fetchWeather('rec')">Fetch Weather</button>
+                    </div>
+                    <div id="rec-weather-summary"
+                        style="display:none; padding-top:12px; border-top:1px solid var(--border-color);">
+                        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span id="rec-weather-icon" style="font-size:32px;">🌤️</span>
+                                <div>
+                                    <div style="font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;"
+                                        id="rec-temp">--°C</div>
+                                    <div style="font-size:12px;color:var(--text-muted);" id="rec-city-label">--</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;" id="rec-stat-chips"></div>
+                        </div>
+                        <div id="rec-warnings" style="margin-top:10px;"></div>
+                    </div>
+                </div>
+
+                <!-- Mode toggle + generate -->
+                <div
+                    style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">
+                            Recommendation Mode</div>
+                        <div class="mode-toggle">
+                            <button class="mode-btn active" id="mode-hybrid" onclick="setMode('hybrid')">🔀
+                                Hybrid</button>
+                            <button class="mode-btn" id="mode-wardrobe" onclick="setMode('wardrobe')">👚 My
+                                Wardrobe</button>
+                            <button class="mode-btn" id="mode-curated" onclick="setMode('curated')">💎 Curated</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg" id="btn-generate" onclick="generateRecommendations()">
+                        ✨ Generate Outfits
+                    </button>
+                </div>
+
+                <!-- Results area -->
+                <div id="rec-loading" style="display:none;" class="loading-overlay">
+                    <div class="spinner"></div> Analyzing weather & wardrobe…
+                </div>
+                <div id="rec-empty" class="empty-state">
+                    <div class="empty-icon">✨</div>
+                    <div class="empty-title">Ready when you are!</div>
+                    <div class="empty-desc">Fetch weather for a city, then click "Generate Outfits" to get personalized
+                        recommendations.</div>
+                </div>
+                <div id="rec-results" style="display:none;">
+                    <!-- Accessories -->
+                    <div id="accessories-section" style="display:none;margin-bottom:24px;">
+                        <div class="section-header">
+                            <div class="section-title">🎒 Recommended Accessories</div>
+                        </div>
+                        <div class="accessory-chips" id="accessory-chips"></div>
+                    </div>
+                    <!-- Layering tip -->
+                    <div id="layering-section" style="display:none;margin-bottom:24px;">
+                        <div class="layering-card">
+                            <div class="section-title">🧅 Smart Layering System</div>
+                            <div id="layering-content"></div>
+                        </div>
+                    </div>
+                    <!-- Outfit grid -->
+                    <div class="section-header">
+                        <div class="section-title">👗 Outfit Suggestions</div>
+                        <span class="section-action" id="rec-count-label">0 outfits found</span>
+                    </div>
+                    <div class="outfit-grid" id="outfit-grid"></div>
+                    <!-- Shopping Hints -->
+                    <div id="shopping-section" style="display:none;margin-top:24px;">
+                        <div class="section-header">
+                            <div class="section-title">🛍️ Complete Your Wardrobe</div>
+                        </div>
+                        <div class="shopping-hints" id="shopping-hints-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── WARDROBE VIEW ──── -->
+            <div class="page-view" id="view-wardrobe">
+                <div class="page-header">
+                    <div class="page-title">👚 My Wardrobe</div>
+                    <div class="page-subtitle">Manage your clothing items for personalized recommendations.</div>
+                </div>
+
+                <!-- Add Item Panel -->
+                <div class="add-item-panel">
+                    <div class="section-header">
+                        <div class="section-title">➕ Add New Item</div>
+                        <button class="btn btn-ghost btn-sm" onclick="toggleAddForm()" id="btn-toggle-add">Hide
+                            Form</button>
+                    </div>
+                    <div id="add-item-form">
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Item Name *</label>
+                                <input type="text" id="item-name" placeholder="e.g. Navy Blue Oxford Shirt" />
+                            </div>
+                            <div class="form-field">
+                                <label>Type</label>
+                                <select id="item-type">
+                                    <option value="shirt">Shirt</option>
+                                    <option value="tshirt">T-Shirt</option>
+                                    <option value="trousers">Trousers/Pants</option>
+                                    <option value="jeans">Jeans</option>
+                                    <option value="shorts">Shorts</option>
+                                    <option value="dress">Dress</option>
+                                    <option value="jacket">Jacket</option>
+                                    <option value="coat">Coat</option>
+                                    <option value="sweater">Sweater</option>
+                                    <option value="hoodie">Hoodie</option>
+                                    <option value="suit">Suit</option>
+                                    <option value="sneakers">Sneakers</option>
+                                    <option value="boots">Boots</option>
+                                    <option value="loafers">Loafers</option>
+                                    <option value="sandals">Sandals</option>
+                                    <option value="hat">Hat/Cap</option>
+                                    <option value="scarf">Scarf</option>
+                                    <option value="gloves">Gloves</option>
+                                    <option value="sunglasses">Sunglasses</option>
+                                    <option value="umbrella">Umbrella</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Category</label>
+                                <select id="item-category">
+                                    <option value="top">Top</option>
+                                    <option value="bottom">Bottom</option>
+                                    <option value="outerwear">Outerwear</option>
+                                    <option value="footwear">Footwear</option>
+                                    <option value="accessory">Accessory</option>
+                                    <option value="set">Full Set</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label>Fabric</label>
+                                <input type="text" id="item-fabric" placeholder="e.g. Cotton, Linen, Wool…" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Color</label>
+                                <input type="text" id="item-color" placeholder="e.g. Navy Blue, White…" />
+                            </div>
+                            <div class="form-field">
+                                <label>Tags (comma-separated)</label>
+                                <input type="text" id="item-tags" placeholder="e.g. casual, office, summer" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Weather Suitability</label>
+                                <div class="pill-group" id="weather-suitability-pills">
+                                    <button class="pill-btn" data-val="very_cold" onclick="toggleSuit(this)">❄️ Very
+                                        Cold</button>
+                                    <button class="pill-btn" data-val="cold" onclick="toggleSuit(this)">🧥 Cold</button>
+                                    <button class="pill-btn active" data-val="cool" onclick="toggleSuit(this)">🍃
+                                        Cool</button>
+                                    <button class="pill-btn active" data-val="warm" onclick="toggleSuit(this)">☀️
+                                        Warm</button>
+                                    <button class="pill-btn" data-val="hot" onclick="toggleSuit(this)">🌡️ Hot</button>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label>Special Properties</label>
+                                <div style="display:flex;gap:12px;align-items:center;padding-top:4px;">
+                                    <label
+                                        style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--text-secondary);">
+                                        <input type="checkbox" id="item-rain" /> ☔ Rain Suitable
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-field" style="margin-bottom:16px;">
+                            <label>Notes</label>
+                            <input type="text" id="item-notes" placeholder="Any notes about this item…" />
+                        </div>
+                        <button class="btn btn-primary" onclick="addWardrobeItem()">➕ Add to Wardrobe</button>
+                    </div>
+                </div>
+
+                <!-- Filter + Grid -->
+                <div class="filter-bar">
+                    <input type="text" id="wardrobe-search" placeholder="🔍 Search items…" oninput="filterWardrobe()" />
+                    <select id="wardrobe-filter-cat" onchange="filterWardrobe()"
+                        style="padding:9px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-full);color:var(--text-primary);font-size:13px;">
+                        <option value="">All Categories</option>
+                        <option value="top">Tops</option>
+                        <option value="bottom">Bottoms</option>
+                        <option value="outerwear">Outerwear</option>
+                        <option value="footwear">Footwear</option>
+                        <option value="accessory">Accessories</option>
+                    </select>
+                    <span id="wardrobe-item-count" style="font-size:12px;color:var(--text-muted);"></span>
+                </div>
+                <div class="wardrobe-grid" id="wardrobe-grid">
+                    <div class="loading-overlay">
+                        <div class="spinner"></div> Loading wardrobe…
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── ANALYTICS VIEW ──── -->
+            <div class="page-view" id="view-analytics">
+                <div class="page-header">
+                    <div class="page-title">📊 Wardrobe Analytics</div>
+                    <div class="page-subtitle">Insights into your clothing usage and patterns.</div>
+                </div>
+
+                <div class="grid-4" style="margin-bottom:24px;" id="analytics-stats">
+                    <div class="loading-overlay" style="grid-column:span 4;">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:16px;">🏆 Most Worn Items</div>
+                        <div class="analytics-list" id="analytics-most-worn"></div>
+                    </div>
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:16px;">😴 Underutilized Items</div>
+                        <div class="analytics-list" id="analytics-under"></div>
+                    </div>
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:16px;">🗂️ Category Breakdown</div>
+                        <div class="chart-container"><canvas id="category-chart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:16px;">🧵 Fabric Breakdown</div>
+                        <div class="chart-container"><canvas id="fabric-chart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──── SETTINGS VIEW ──── -->
+            <div class="page-view" id="view-settings">
+                <div class="page-header">
+                    <div class="page-title">⚙️ Settings & Preferences</div>
+                    <div class="page-subtitle">Customize your SORS experience.</div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:20px;">👤 Profile</div>
+                        <div class="settings-section">
+                            <div class="form-field" style="margin-bottom:16px;">
+                                <label>Display Name</label>
+                                <input type="text" id="pref-name" class="form-field input"
+                                    style="width:100%;padding:10px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:13px;" />
+                            </div>
+                            <div class="form-field" style="margin-bottom:16px;">
+                                <label>Default City</label>
+                                <input type="text" id="pref-location" placeholder="e.g. Mumbai"
+                                    style="width:100%;padding:10px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:13px;" />
+                            </div>
+                        </div>
+                        <div class="section-title" style="margin-bottom:12px;">🎨 Style Preferences</div>
+                        <div class="settings-section">
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <div class="settings-item-label">Preferred Style</div>
+                                    <div class="settings-item-desc">Casual, formal, or sporty?</div>
+                                </div>
+                                <select id="pref-style"
+                                    style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:13px;">
+                                    <option value="casual">Casual</option>
+                                    <option value="formal">Formal</option>
+                                    <option value="smart casual">Smart Casual</option>
+                                    <option value="sport">Sport / Athletic</option>
+                                </select>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <div class="settings-item-label">Default Occasion</div>
+                                    <div class="settings-item-desc">What occasion to optimise for?</div>
+                                </div>
+                                <select id="pref-occasion"
+                                    style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:13px;">
+                                    <option value="casual">Casual</option>
+                                    <option value="office">Office / Work</option>
+                                    <option value="outdoor">Outdoor</option>
+                                    <option value="sport">Sport / Fitness</option>
+                                    <option value="evening">Evening / Social</option>
+                                </select>
+                            </div>
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <div class="settings-item-label">Sustainability Priority</div>
+                                    <div class="settings-item-desc">Prefer eco-friendly outfit suggestions</div>
+                                </div>
+                                <div class="toggle" id="toggle-sustainability" onclick="toggleSustainability()"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="savePreferences()">💾 Save Preferences</button>
+                    </div>
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:20px;">ℹ️ About SORS</div>
+                        <div style="font-size:13px;color:var(--text-secondary);line-height:1.8;">
+                            <p style="margin-bottom:12px;"><strong style="color:var(--text-primary);">Smart Outfit
+                                    Recommendation System</strong> v1.0.0</p>
+                            <p style="margin-bottom:8px;">SORS combines real-time weather intelligence with your
+                                personal wardrobe to generate context-aware outfit recommendations.</p>
+                            <div class="divider"></div>
+                            <div
+                                style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-muted);">
+                                <div>🌤️ Weather: OpenWeatherMap (demo mode)</div>
+                                <div>🤖 Engine: Rule-based recommendation system</div>
+                                <div>🌱 Sustainability scoring built-in</div>
+                                <div>📊 Usage analytics tracked per item</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div style="font-size:12px;color:var(--text-muted);">
+                                <strong>Demo Account:</strong> username: demo | password: demo123
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end main-content -->
+    </div><!-- end app-shell -->
+
+    <!-- ═══════════════════ AI STYLIST MODAL ═══════════════════ -->
+    <div class="modal-overlay" id="stylist-modal" onclick="closeModal(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title">🤖 AI Stylist Explanation</div>
+                    <div class="modal-subtitle" id="stylist-outfit-name">Loading…</div>
+                </div>
+                <button class="btn-close-modal" onclick="closeStylistModal()">✕</button>
+            </div>
+            <div class="comfort-score-bar" style="margin-bottom:16px;">
+                <div class="score-label">
+                    <span style="color:var(--text-secondary);">Comfort Score</span>
+                    <span class="score-value" id="stylist-score">–</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" id="stylist-bar" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="explanation-text" id="stylist-explanation"></div>
+            <div style="margin-top:20px;">
+                <div class="section-title" style="font-size:14px;margin-bottom:8px;">Rate this recommendation</div>
+                <div class="star-rating">
+                    <span>How was this outfit?</span>
+                    <span class="star" data-val="1" onclick="rateStar(1)">⭐</span>
+                    <span class="star" data-val="2" onclick="rateStar(2)">⭐</span>
+                    <span class="star" data-val="3" onclick="rateStar(3)">⭐</span>
+                    <span class="star" data-val="4" onclick="rateStar(4)">⭐</span>
+                    <span class="star" data-val="5" onclick="rateStar(5)">⭐</span>
+                </div>
+                <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="submitFeedback()">Submit
+                    Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════ TOAST CONTAINER ═══════════════════ -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

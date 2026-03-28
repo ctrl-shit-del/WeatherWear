@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeatherWear — AI Outfit Recommendations</title>
+  <meta name="description" content="WeatherWear: AI-powered outfit recommendations based on real-time weather data. Get personalized clothing suggestions, manage your wardrobe, and chat with your AI style advisor." />
+  <meta property="og:title" content="WeatherWear — Dress Smart Every Day" />
+  <meta property="og:description" content="AI outfit recommendations powered by real-time weather data, ML comfort scores, and your personal wardrobe." />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+
+  <style>
+    /* Additional layout-specific styles */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+    .dashboard-main { display: flex; flex-direction: column; gap: 20px; }
+    .dashboard-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    @media (max-width: 1100px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .weather-hero-inner {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .outfit-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .analytics-page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .stylist-page {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 20px;
+      height: calc(100vh - 140px);
+    }
+
+    @media (max-width: 900px) {
+      .stylist-page { grid-template-columns: 1fr; height: auto; }
+    }
+
+    .wardrobe-page { display: flex; flex-direction: column; gap: 20px; }
+    .wardrobe-top-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .wardrobe-filter-btn {
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border-card);
+      background: var(--glass-bg);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .wardrobe-filter-btn.active,
+    .wardrobe-filter-btn:hover {
+      background: rgba(108,92,231,0.15);
+      border-color: rgba(108,92,231,0.4);
+      color: var(--brand-secondary);
+    }
+
+    .settings-section { margin-bottom: 24px; }
+    .settings-section-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+    }
+    .settings-row-label { font-size: 0.9rem; font-weight: 500; }
+    .settings-row-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+    .wardrobe-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .wardrobe-stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .mini-stat {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      text-align: center;
+    }
+    .mini-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .mini-stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .demo-notice {
+      background: rgba(253,203,110,0.08);
+      border: 1px solid rgba(253,203,110,0.25);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      font-size: 0.8rem;
+      color: var(--brand-amber);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ═══════════════════════════════
+         SIDEBAR NAVIGATION
+    ═══════════════════════════════ -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <h1>WeatherWear</h1>
+        <p>AI Outfit Intelligence</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item ripple" data-page="dashboard">
+          <span class="nav-icon">🌤️</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item ripple" data-page="wardrobe">
+          <span class="nav-icon">👗</span>
+          <span>Wardrobe</span>
+        </button>
+        <button class="nav-item ripple" data-page="stylist">
+          <span class="nav-icon">🤖</span>
+          <span>AI Stylist</span>
+        </button>
+        <button class="nav-item ripple" data-page="trends">
+          <span class="nav-icon">✨</span>
+          <span>Trends</span>
+        </button>
+        <button class="nav-item ripple" data-page="inspiration">
+          <span class="nav-icon">📌</span>
+          <span>Inspiration</span>
+        </button>
+        <button class="nav-item ripple" data-page="analytics">
+          <span class="nav-icon">📊</span>
+          <span>Analytics</span>
+        </button>
+        <button class="nav-item ripple" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div id="time-of-day-label" style="
+          font-size:0.78rem;
+          font-weight:600;
+          color:var(--tod-brand-secondary);
+          margin-bottom:8px;
+          letter-spacing:0.04em;
+          transition: color 3s ease;
+        ">🌙 Loading…</div>
+        <div style="margin-bottom:6px;font-size:0.72rem;">🌿 Dress smart. Live sustainably.</div>
+        <div id="last-updated" style="font-size:0.7rem;opacity:0.6"></div>
+      </div>
+    </aside>
+
+    <!-- ═══════════════════════════════
+         MAIN CONTENT AREA
+    ═══════════════════════════════ -->
+    <main class="main-content">
+
+      <!-- Top Header -->
+      <header class="top-header">
+        <div id="header-title" class="header-title">🌤️ Dashboard</div>
+        <div class="header-actions">
+          <!-- City Search -->
+          <div class="search-bar">
+            <span>🔍</span>
+            <input id="city-search" type="text" placeholder="Search city…" autocomplete="off" />
+          </div>
+          <button id="search-btn" class="btn btn-primary btn-sm">🔍</button>
+          <button id="geo-btn" class="btn btn-secondary btn-sm" title="Use my location">📍</button>
+        </div>
+      </header>
+
+      <!-- Toast Container -->
+      <div id="toast-container" class="toast-container"></div>
+
+      <!-- ─────────────────────────────
+           PAGE: DASHBOARD
+      ───────────────────────────── -->
+      <section id="page-dashboard" class="page active">
+        <div id="weather-alerts"></div>
+
+        <div class="dashboard-grid">
+          <!-- LEFT COLUMN -->
+          <div class="dashboard-main">
+
+            <!-- Weather Hero Card -->
+            <div id="weather-hero" class="weather-hero mood-mild">
+              <div id="weather-particles"></div>
+              <div class="weather-hero-inner">
+                <div>
+                  <div id="wd-city" class="weather-city">📍 Loading…</div>
+                  <div id="wd-temp" class="weather-temp-big">--°</div>
+                  <div id="wd-condition" class="weather-condition" style="text-transform:capitalize">Fetching weather…</div>
+                  <div id="wd-feels" style="font-size:0.85rem;color:rgba(255,255,255,0.6);margin-top:4px"></div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px" id="condition-tags"></div>
+                </div>
+
+                <!-- Comfort Score Ring -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;z-index:3">
+                  <div class="comfort-ring">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="10" />
+                      <circle id="comfort-ring-fill" cx="60" cy="60" r="44"
+                        fill="none" stroke="#00b894" stroke-width="10"
+                        stroke-linecap="round"
+                        stroke-dasharray="276.46"
+                        stroke-dashoffset="276.46"
+                        class="comfort-ring-path"
+                        style="transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.4s ease;" />
+                    </svg>
+                    <div class="comfort-text">
+                      <div id="comfort-score-num" class="comfort-score-num" style="color:#00b894">--</div>
+                      <div id="comfort-label-text" class="comfort-label-text">Comfort</div>
+                    </div>
+                  </div>
+                  <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);text-align:center">Comfort<br>Score</div>
+                </div>
+              </div>
+
+              <!-- Weather Stats -->
+              <div class="weather-stats" style="position:relative;z-index:3;">
+                <div class="weather-stat">
+                  <div class="weather-stat-label">💧 Humidity</div>
+                  <div id="wd-humidity" class="weather-stat-value">--</div>
+                </div>
+                <div class="weather-stat">
+                  <div class="weather-stat-label">💨 Wind</div>
+                  <div id="wd-wind" class="weather-stat-value">--</div>
+                </div>
+                <div class="weather-stat">
+                  <div class="weather-stat-label">☀️ UV Index</div>
+                  <div id="wd-uv" class="weather-stat-value">--</div>
+                </div>
+                <div class="weather-stat">
+                  <div class="weather-stat-label">🌧️ Precip.</div>
+                  <div id="wd-precip" class="weather-stat-value">--</div>
+                </div>
+                <div class="weather-stat">
+                  <div class="weather-stat-label">🌡️ Pressure</div>
+                  <div id="wd-pressure" class="weather-stat-value">--</div>
+                </div>
+                <div class="weather-stat">
+                  <div class="weather-stat-label">👁️ Visibility</div>
+                  <div id="wd-visibility" class="weather-stat-value">--</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outfit Recommendations -->
+            <div>
+              <div class="section-header">
+                <div>
+                  <div class="section-title">Today's Outfits</div>
+                  <div class="section-subtitle">Curated · From Wardrobe · Hybrid</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-secondary btn-sm" onclick="fetchAndRenderWeather(document.getElementById('city-search').value || '')">🔄 Refresh</button>
+                </div>
+              </div>
+
+              <div id="outfit-cards" class="outfit-cards-grid">
+                <!-- Skeleton loaders -->
+                <div class="outfit-card"><div class="skeleton" style="height:200px;border-radius:var(--radius-lg)"></div></div>
+                <div class="outfit-card"><div class="skeleton" style="height:200px;border-radius:var(--radius-lg)"></div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Sidebar -->
+          <div class="dashboard-sidebar">
+
+            <!-- 5-Day Forecast -->
+            <div class="card">
+              <div class="card-title">📅 5-Day Forecast</div>
+              <div id="forecast-strip" class="forecast-strip">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Sunrise/Sunset -->
+            <div class="card">
+              <div class="card-title">🌅 Sun Schedule</div>
+              <div style="display:flex;justify-content:space-around;">
+                <div style="text-align:center">
+                  <div style="font-size:1.5rem">🌅</div>
+                  <div id="wd-sunrise" style="font-family:var(--font-display);font-size:1.1rem;font-weight:700">--:--</div>
+                  <div style="font-size:0.72rem;color:var(--text-muted)">Sunrise</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-size:1.5rem">🌇</div>
+                  <div id="wd-sunset" style="font-family:var(--font-display);font-size:1.1rem;font-weight:700">--:--</div>
+                  <div style="font-size:0.72rem;color:var(--text-muted)">Sunset</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Outfit Tips -->
+            <div class="card">
+              <div class="card-title">💡 Quick Tips</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:0.85rem;color:var(--text-secondary)">
+                <div>🧴 Apply SPF 30+ if UV index is above 5</div>
+                <div>🌂 Keep a compact umbrella when humidity is &gt;80%</div>
+                <div>🧥 Layer up if feels-like is 5°+ below actual temp</div>
+                <div>💧 Drink extra water on hot + humid days</div>
+              </div>
+            </div>
+
+            <!-- Demo notice if no API key -->
+            <div class="demo-notice">
+              ⚡ Running in demo mode. Add your OpenWeather API key in <strong>Settings</strong> for live data.
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: WARDROBE
+      ───────────────────────────── -->
+      <section id="page-wardrobe" class="page">
+        <div class="wardrobe-page">
+
+          <!-- Header -->
+          <div class="section-header">
+            <div>
+              <div class="section-title">My Wardrobe</div>
+              <div class="section-subtitle">Manage your clothes · Track wear · Get personalized recs</div>
+            </div>
+            <button class="btn btn-primary ripple" onclick="openAddItemModal()">+ Add Item</button>
+          </div>
+
+          <!-- Stats -->
+          <div class="wardrobe-stats-bar">
+            <div class="mini-stat">
+              <div id="wardrobe-count" class="mini-stat-value">0</div>
+              <div class="mini-stat-label">Total Items</div>
+            </div>
+            <div class="mini-stat">
+              <div id="wardrobe-worn-count" class="mini-stat-value">0</div>
+              <div class="mini-stat-label">Items Worn</div>
+            </div>
+            <div class="mini-stat">
+              <div id="wardrobe-eco-count" class="mini-stat-value">0</div>
+              <div class="mini-stat-label">Eco Items 🌿</div>
+            </div>
+            <div class="mini-stat">
+              <div id="wardrobe-total-wears" class="mini-stat-value">0</div>
+              <div class="mini-stat-label">Total Wears</div>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="wardrobe-top-bar">
+            <span style="font-size:0.8rem;color:var(--text-muted)">Filter:</span>
+            <button class="wardrobe-filter-btn active" data-filter="all">All</button>
+            <button class="wardrobe-filter-btn" data-filter="top">Tops</button>
+            <button class="wardrobe-filter-btn" data-filter="outer">Outerwear</button>
+            <button class="wardrobe-filter-btn" data-filter="bottom">Bottoms</button>
+            <button class="wardrobe-filter-btn" data-filter="shoes">Shoes</button>
+            <button class="wardrobe-filter-btn" data-filter="accessory">Accessories</button>
+            <button class="wardrobe-filter-btn" data-filter="winter">Winter</button>
+            <button class="wardrobe-filter-btn" data-filter="summer">Summer</button>
+          </div>
+
+          <!-- Grid -->
+          <div id="wardrobe-grid" class="wardrobe-grid"></div>
+
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: AI STYLIST
+      ───────────────────────────── -->
+      <section id="page-stylist" class="page">
+        <div class="stylist-page">
+
+          <!-- Chat Column -->
+          <div class="card" style="display:flex;flex-direction:column;padding:0;overflow:hidden;height:100%;">
+            <div style="padding:20px 20px 14px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:12px">
+              <div class="stylist-avatar" style="width:44px;height:44px;font-size:1.4rem">🤖</div>
+              <div>
+                <div style="font-family:var(--font-display);font-weight:700">AI Style Advisor</div>
+                <div style="font-size:0.75rem;color:var(--brand-green)">● Online · Ready to help</div>
+              </div>
+            </div>
+
+            <!-- Quick Prompts -->
+            <div class="quick-prompts">
+              <button class="quick-prompt-btn" data-prompt="Why is today's outfit recommended?">Why this outfit?</button>
+              <button class="quick-prompt-btn" data-prompt="I don't like jeans, what can I wear instead?">No jeans</button>
+              <button class="quick-prompt-btn" data-prompt="What should I wear to a work meeting today?">Work meeting</button>
+              <button class="quick-prompt-btn" data-prompt="Tell me about today's weather">Today's weather</button>
+              <button class="quick-prompt-btn" data-prompt="How sustainable is my wardrobe?">Eco check</button>
+              <button class="quick-prompt-btn" data-prompt="Where can I buy today's outfit?">Shopping links</button>
+            </div>
+
+            <!-- Messages -->
+            <div id="chat-messages" class="chat-messages"></div>
+
+            <!-- Input -->
+            <div class="chat-input-area">
+              <input id="chat-input" class="input" type="text"
+                placeholder="Ask about outfits, style, alternatives…" autocomplete="off" />
+              <button id="chat-send" class="btn btn-primary btn-sm">Send ↗</button>
+            </div>
+          </div>
+
+          <!-- Sidepanel: Context Info -->
+          <div style="display:flex;flex-direction:column;gap:16px;overflow-y:auto">
+
+            <div class="card">
+              <div class="card-title">🌡️ Today's Context</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem">
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Temperature</span>
+                  <span id="stylist-temp" style="font-weight:600">--</span>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Condition</span>
+                  <span id="stylist-cond" style="font-weight:600">--</span>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Humidity</span>
+                  <span id="stylist-humidity" style="font-weight:600">--</span>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <span style="color:var(--text-muted)">Comfort</span>
+                  <span id="stylist-comfort" style="font-weight:600">--/10</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">✨ Today's Highlight</div>
+              <div id="stylist-outfit-highlight" style="font-size:0.875rem;color:var(--text-secondary)">
+                Load weather data on the Dashboard to see today's featured outfit here.
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">💬 Sample Questions</div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-secondary)">
+                <div>• "What to wear to a beach party?"</div>
+                <div>• "Suggest eco-friendly alternatives"</div>
+                <div>• "My wardrobe analytics?"</div>
+                <div>• "Outfit for a job interview?"</div>
+                <div>• "What accessories work today?"</div>
+              </div>
+            </div>
+
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('chat-messages').innerHTML=''; Stylist.clearHistory()">🗑️ Clear Chat</button>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: TRENDS & WISHLIST
+      ───────────────────────────── -->
+      <section id="page-trends" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">✨ Live Fashion Trends</div>
+            <div class="section-subtitle">Real-time web scraping for current styles & wishlist tracking</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="fetchLiveTrends()">🔄 Sync Trends</button>
+        </div>
+
+        <div id="trends-grid" class="analytics-page-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+          <!-- Populated by JS -->
+          <div class="empty-state" style="grid-column:1/-1">
+            <p>Fetching real-time trends...</p>
+            <div class="loading-spinner" style="border-top-color:var(--brand-primary); margin:20px auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: INSPIRATION (MASONRY)
+      ───────────────────────────── -->
+      <section id="page-inspiration" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">📌 Inspiration Board</div>
+            <div class="section-subtitle">Curated looks tailored to your style and current weather</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="renderInspirationBoard()">🔄 Shuffle</button>
+        </div>
+
+        <!-- Masonry Grid Container -->
+        <div id="masonry-grid" style="column-count: 3; column-gap: 16px; width: 100%; padding: 10px 0;">
+          <!-- JS will populate Pinterest-style images here -->
+        </div>
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: ANALYTICS
+      ───────────────────────────── -->
+      <section id="page-analytics" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">📊 Wardrobe Analytics</div>
+            <div class="section-subtitle">Usage patterns · Eco impact · Style insights</div>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="analytics-grid" style="margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:rgba(108,92,231,0.15)">📦</div>
+            <div>
+              <div id="analytics-total" class="stat-card-value" style="color:var(--brand-primary)">0</div>
+              <div class="stat-card-label">Total Wardrobe Items</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:rgba(0,184,148,0.15)">🌿</div>
+            <div>
+              <div id="analytics-eco-pct" class="stat-card-value" style="color:var(--brand-green)">0%</div>
+              <div class="stat-card-label">Sustainable Items</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:rgba(253,203,110,0.15)">🔁</div>
+            <div>
+              <div id="analytics-avg-wears" class="stat-card-value" style="color:var(--brand-amber)">0</div>
+              <div class="stat-card-label">Avg. Wears per Item</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="background:rgba(0,206,201,0.15)">♻️</div>
+            <div>
+              <div id="analytics-co2" class="stat-card-value" style="color:var(--brand-teal)">0</div>
+              <div class="stat-card-label">CO₂ Offset (kg)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-page-grid">
+          <!-- Most worn chart -->
+          <div class="card">
+            <div class="card-title">🔥 Most Worn Items</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-most-worn"></canvas>
+            </div>
+          </div>
+
+          <!-- By type donut -->
+          <div class="card">
+            <div class="card-title">👔 Wardrobe by Type</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-by-type"></canvas>
+            </div>
+          </div>
+
+          <!-- By season -->
+          <div class="card">
+            <div class="card-title">🌸 By Season</div>
+            <div class="chart-wrapper">
+              <canvas id="chart-by-season"></canvas>
+            </div>
+          </div>
+
+          <!-- Underused items -->
+          <div class="card">
+            <div class="card-title">😴 Underused Items</div>
+            <div id="underused-items">
+              <p class="empty-state">Add wardrobe items to see insights</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Sustainability Report -->
+        <div class="section-header">
+          <div class="section-title">🌿 Sustainability Report</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="card">
+            <div class="card-subtitle">Sustainable Score</div>
+            <div id="sustainability-score" style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--brand-green)">--</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">of your wardrobe is eco-friendly</div>
+          </div>
+          <div class="card">
+            <div class="card-subtitle">Estimated CO₂ Saved</div>
+            <div id="co2-saved" style="font-family:var(--font-display);font-size:2.5rem;font-weight:800;color:var(--brand-teal)">-- kg</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">via eco fabric choices</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🧵 Fabric Breakdown</div>
+          <div id="fabric-breakdown">
+            <p class="empty-state">Add wardrobe items to see your fabric profile</p>
+          </div>
+        </div>
+
+        <!-- Outfit History -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">📅 Outfit History</div>
+          <div id="outfit-history-timeline"></div>
+        </div>
+
+      </section>
+
+      <!-- ─────────────────────────────
+           PAGE: SETTINGS
+      ───────────────────────────── -->
+      <section id="page-settings" class="page">
+        <div class="section-header">
+          <div>
+            <div class="section-title">⚙️ Settings</div>
+            <div class="section-subtitle">Customize your WeatherWear experience</div>
+          </div>
+          <button id="save-settings-btn" class="btn btn-primary ripple">💾 Save Settings</button>
+        </div>
+
+        <div style="max-width:640px;display:flex;flex-direction:column;gap:12px">
+
+          <!-- Weather API -->
+          <div class="card">
+            <div class="settings-section-title">🌐 Weather Data</div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">OpenWeather API Key</div>
+                <div class="settings-row-desc">Free at openweathermap.org · 60 calls/min on free tier</div>
+              </div>
+              <input id="setting-api-key" class="input" type="password" placeholder="Enter API key…"
+                style="max-width:220px" autocomplete="off" />
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Default City</div>
+                <div class="settings-row-desc">Shown when app first loads</div>
+              </div>
+              <input id="setting-default-city" class="input" type="text" placeholder="e.g. Mumbai"
+                style="max-width:180px" />
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Temperature Units</div>
+                <div class="settings-row-desc">Celsius or Fahrenheit</div>
+              </div>
+              <select id="setting-units" class="input form-select" style="max-width:140px">
+                <option value="metric">°C (Metric)</option>
+                <option value="imperial">°F (Imperial)</option>
+              </select>
+            </div>
+
+            <div style="margin-top:12px">
+              <div class="demo-notice">
+                📡 No API key? WeatherWear works in <strong>demo mode</strong> with simulated weather data for your city.
+              </div>
+            </div>
+          </div>
+
+          <!-- Style Preferences -->
+          <div class="card">
+            <div class="settings-section-title">🎨 Style Preferences</div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Default Style</div>
+                <div class="settings-row-desc">How we prioritize outfit suggestions</div>
+              </div>
+              <select id="setting-style" class="input form-select" style="max-width:160px">
+                <option value="casual">Casual</option>
+                <option value="smart_casual">Smart Casual</option>
+                <option value="formal">Formal</option>
+                <option value="sporty">Sporty</option>
+                <option value="boho">Boho</option>
+                <option value="streetwear">Streetwear</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">🌿 Sustainability Mode</div>
+                <div class="settings-row-desc">Prioritize eco-friendly outfit recommendations</div>
+              </div>
+              <label class="toggle">
+                <input id="setting-eco-mode" type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Data Management -->
+          <div class="card">
+            <div class="settings-section-title">💾 Data & Privacy</div>
+
+            <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.7">
+              All your data (wardrobe, preferences, history) is stored <strong>locally in your browser</strong> only.
+              Nothing is sent to any server. Your privacy is completely protected.
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-secondary btn-sm" onclick="exportData()">📤 Export Data</button>
+              <button id="clear-data-btn" class="btn btn-danger btn-sm">🗑️ Clear All Data</button>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="card">
+            <div class="settings-section-title">ℹ️ About</div>
+            <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8">
+              <strong>WeatherWear v1.0</strong> — AI Outfit Intelligence<br/>
+              Built with real-time weather data, ML-style comfort scoring, and curated fashion expertise.<br/>
+              <br/>
+              Features: Weather API · Comfort Score Algorithm · Wardrobe Manager · AI Stylist · Analytics · Sustainability Tracking
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════
+       MODAL: ADD / EDIT WARDROBE ITEM
+  ═══════════════════════════════ -->
+  <div id="modal-add-item" class="modal-overlay" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <div id="modal-add-title" class="modal-title">Add Wardrobe Item</div>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="closeModal('modal-add-item')">✕</button>
+      </div>
+      <form id="form-add-item">
+        <input id="form-item-id" type="hidden" />
+        <div class="modal-body">
+
+          <div>
+            <label class="form-label" for="item-name">Item Name *</label>
+            <input id="item-name" class="input" type="text"
+              placeholder="e.g. White Cotton Shirt" required />
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label class="form-label" for="item-type">Type *</label>
+              <select id="item-type" class="input form-select" required>
+                <option value="top">Top / Shirt</option>
+                <option value="base">Base Layer</option>
+                <option value="mid">Mid Layer</option>
+                <option value="outer">Outerwear</option>
+                <option value="bottom">Bottoms</option>
+                <option value="shoes">Shoes</option>
+                <option value="accessory">Accessory</option>
+                <option value="dress">Dress</option>
+                <option value="suit">Suit</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label" for="item-season">Season</label>
+              <select id="item-season" class="input form-select">
+                <option value="all">All seasons</option>
+                <option value="spring">Spring</option>
+                <option value="summer">Summer</option>
+                <option value="autumn">Autumn</option>
+                <option value="winter">Winter</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label class="form-label" for="item-fabric">Fabric</label>
+              <select id="item-fabric" class="input form-select">
+                <option>cotton</option>
+                <option>linen</option>
+                <option>wool</option>
+                <option>silk</option>
+                <option>denim</option>
+                <option>polyester</option>
+                <option>nylon</option>
+                <option>leather</option>
+                <option>suede</option>
+                <option>fleece</option>
+                <option>cashmere</option>
+                <option>merino wool</option>
+                <option>organic cotton</option>
+                <option>hemp</option>
+                <option>bamboo</option>
+                <option>recycled polyester</option>
+                <option>synthetic blend</option>
+                <option>other</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="form-label" for="item-color">Color</label>
+              <input id="item-color" class="input" type="text"
+                placeholder="e.g. Navy Blue" />
+            </div>
+          </div>
+
+          <div class="alert alert-info" style="font-size:0.8rem;">
+            💡 Items are auto-tagged based on type and fabric for smart matching with weather conditions.
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('modal-add-item')">Cancel</button>
+          <button type="submit" class="btn btn-primary">💾 Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       SCRIPTS (load order matters)
+  ═══════════════════════════════ -->
+  <script src="js/storage.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/outfit-db.js"></script>
+  <script src="js/recommendation.js"></script>
+  <script src="js/wardrobe.js"></script>
+  <script src="js/stylist.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/trends.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Inline: analytics stat updater + export -->
+  <script>
+    // Update analytics stat cards when page is shown
+    document.querySelector('[data-page="analytics"]').addEventListener('click', () => {
+      setTimeout(() => {
+        const stats = Wardrobe.getStats();
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        set('analytics-total', stats.total);
+        set('analytics-eco-pct', stats.sustainablePercent + '%');
+        set('analytics-avg-wears', stats.avgWears);
+        set('analytics-co2', stats.co2Saved > 0 ? '+' + stats.co2Saved + ' kg' : stats.co2Saved + ' kg');
+      }, 80);
+    });
+
+    // Update stylist sidebar when stylist page opens
+    document.querySelector('[data-page="stylist"]').addEventListener('click', () => {
+      const w = Storage.get('last_weather');
+      if (!w) return;
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+      set('stylist-temp', `${w.temp}° (feels ${w.feels_like}°)`);
+      set('stylist-cond', w.condition_main);
+      set('stylist-humidity', `${w.humidity}%`);
+
+      // Mock comfort score based on previous calc (quick update)
+      const recsMsgEl = document.getElementById('stylist-outfit-highlight');
+      if (recsMsgEl) recsMsgEl.textContent = 'For latest outfit analysis, check the dashboard first!';
+    });
+
+    // Auto-fetch trends when navigating to the Trends page
+    document.querySelector('[data-page="trends"]').addEventListener('click', () => {
+      setTimeout(() => {
+        if(window.fetchLiveTrends) window.fetchLiveTrends();
+      }, 100);
+    });
+
+    // Render masonry on Inspiration page load
+    document.querySelector('[data-page="inspiration"]').addEventListener('click', () => {
+      setTimeout(() => {
+        if(window.renderInspirationBoard) window.renderInspirationBoard();
+      }, 100);
+    });
+
+    // Export data
+    window.exportData = function() {
+      const data = {
+        wardrobe: Storage.get('wardrobe_items', []),
+        preferences: Storage.get('user_prefs', {}),
+        history: Storage.get('outfit_history', []),
+        feedback: Storage.get('feedback_history', {}),
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `weatherwear-export-${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+  </script>
+</body>
+</html>

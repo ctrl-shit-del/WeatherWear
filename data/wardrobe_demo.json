@@ -1,0 +1,311 @@
+{
+    "demo": {
+        "items": [
+            {
+                "id": "W001",
+                "name": "Navy Blue Oxford Shirt",
+                "type": "shirt",
+                "category": "top",
+                "fabric": "cotton",
+                "color": "navy",
+                "tags": [
+                    "formal",
+                    "office",
+                    "casual"
+                ],
+                "weather_suitability": [
+                    "cool",
+                    "warm"
+                ],
+                "rain_suitable": false,
+                "times_worn": 12,
+                "last_worn": "2026-03-20",
+                "added_date": "2025-09-01",
+                "image_placeholder": "shirt",
+                "notes": "Favorite shirt for office days"
+            },
+            {
+                "id": "W002",
+                "name": "Grey Slim Chinos",
+                "type": "trousers",
+                "category": "bottom",
+                "fabric": "cotton blend",
+                "color": "grey",
+                "tags": [
+                    "casual",
+                    "office",
+                    "smart casual"
+                ],
+                "weather_suitability": [
+                    "cool",
+                    "warm",
+                    "cold"
+                ],
+                "rain_suitable": false,
+                "times_worn": 20,
+                "last_worn": "2026-03-24",
+                "added_date": "2025-08-15",
+                "image_placeholder": "trousers",
+                "notes": ""
+            },
+            {
+                "id": "W003",
+                "name": "Black Waterproof Jacket",
+                "type": "jacket",
+                "category": "outerwear",
+                "fabric": "synthetic",
+                "color": "black",
+                "tags": [
+                    "rain",
+                    "outdoor",
+                    "casual"
+                ],
+                "weather_suitability": [
+                    "cold",
+                    "cool",
+                    "very_cold"
+                ],
+                "rain_suitable": true,
+                "times_worn": 8,
+                "last_worn": "2026-03-10",
+                "added_date": "2025-11-01",
+                "image_placeholder": "jacket",
+                "notes": "Lightweight and packable"
+            },
+            {
+                "id": "W004",
+                "name": "White Linen Shirt",
+                "type": "shirt",
+                "category": "top",
+                "fabric": "linen",
+                "color": "white",
+                "tags": [
+                    "summer",
+                    "casual",
+                    "beach"
+                ],
+                "weather_suitability": [
+                    "warm",
+                    "hot"
+                ],
+                "rain_suitable": false,
+                "times_worn": 5,
+                "last_worn": "2026-02-28",
+                "added_date": "2025-06-01",
+                "image_placeholder": "shirt",
+                "notes": "Great for hot days"
+            },
+            {
+                "id": "W005",
+                "name": "Brown Leather Chelsea Boots",
+                "type": "boots",
+                "category": "footwear",
+                "fabric": "leather",
+                "color": "brown",
+                "tags": [
+                    "formal",
+                    "casual",
+                    "winter"
+                ],
+                "weather_suitability": [
+                    "cold",
+                    "cool"
+                ],
+                "rain_suitable": false,
+                "times_worn": 15,
+                "last_worn": "2026-03-22",
+                "added_date": "2025-10-01",
+                "image_placeholder": "boots",
+                "notes": ""
+            },
+            {
+                "id": "W006",
+                "name": "Merino Wool Sweater",
+                "type": "sweater",
+                "category": "top",
+                "fabric": "merino wool",
+                "color": "charcoal",
+                "tags": [
+                    "winter",
+                    "casual",
+                    "layered"
+                ],
+                "weather_suitability": [
+                    "cold",
+                    "very_cold"
+                ],
+                "rain_suitable": false,
+                "times_worn": 10,
+                "last_worn": "2026-03-15",
+                "added_date": "2025-12-01",
+                "image_placeholder": "sweater",
+                "notes": "Super warm and soft"
+            },
+            {
+                "id": "W007",
+                "name": "Wide-Brim Sun Hat",
+                "type": "hat",
+                "category": "accessory",
+                "fabric": "straw",
+                "color": "beige",
+                "tags": [
+                    "summer",
+                    "UV protection",
+                    "beach"
+                ],
+                "weather_suitability": [
+                    "warm",
+                    "hot"
+                ],
+                "rain_suitable": false,
+                "times_worn": 4,
+                "last_worn": "2026-01-10",
+                "added_date": "2025-05-01",
+                "image_placeholder": "hat",
+                "notes": ""
+            },
+            {
+                "id": "W008",
+                "name": "White Sneakers",
+                "type": "sneakers",
+                "category": "footwear",
+                "fabric": "canvas",
+                "color": "white",
+                "tags": [
+                    "casual",
+                    "weekend",
+                    "summer"
+                ],
+                "weather_suitability": [
+                    "cool",
+                    "warm",
+                    "hot"
+                ],
+                "rain_suitable": false,
+                "times_worn": 25,
+                "last_worn": "2026-03-25",
+                "added_date": "2025-07-01",
+                "image_placeholder": "sneakers",
+                "notes": "Most worn item"
+            },
+            {
+                "id": "W009",
+                "name": "Denim Jacket",
+                "type": "jacket",
+                "category": "outerwear",
+                "fabric": "denim",
+                "color": "blue",
+                "tags": [
+                    "casual",
+                    "weekend",
+                    "layered"
+                ],
+                "weather_suitability": [
+                    "cool"
+                ],
+                "rain_suitable": false,
+                "times_worn": 18,
+                "last_worn": "2026-03-18",
+                "added_date": "2025-09-15",
+                "image_placeholder": "jacket",
+                "notes": ""
+            },
+            {
+                "id": "W010",
+                "name": "UV-Blocking Sunglasses",
+                "type": "sunglasses",
+                "category": "accessory",
+                "fabric": "plastic/glass",
+                "color": "black",
+                "tags": [
+                    "summer",
+                    "UV protection",
+                    "outdoor"
+                ],
+                "weather_suitability": [
+                    "warm",
+                    "hot"
+                ],
+                "rain_suitable": false,
+                "times_worn": 30,
+                "last_worn": "2026-03-26",
+                "added_date": "2025-04-01",
+                "image_placeholder": "sunglasses",
+                "notes": ""
+            },
+            {
+                "id": "W011",
+                "name": "Dark Slim Jeans",
+                "type": "jeans",
+                "category": "bottom",
+                "fabric": "denim",
+                "color": "dark blue",
+                "tags": [
+                    "casual",
+                    "weekend",
+                    "evening"
+                ],
+                "weather_suitability": [
+                    "cold",
+                    "cool"
+                ],
+                "rain_suitable": false,
+                "times_worn": 22,
+                "last_worn": "2026-03-24",
+                "added_date": "2025-08-01",
+                "image_placeholder": "jeans",
+                "notes": ""
+            },
+            {
+                "id": "W012",
+                "name": "Compact Umbrella",
+                "type": "umbrella",
+                "category": "accessory",
+                "fabric": "polyester",
+                "color": "black",
+                "tags": [
+                    "rain",
+                    "commute"
+                ],
+                "weather_suitability": [
+                    "cold",
+                    "cool",
+                    "warm"
+                ],
+                "rain_suitable": true,
+                "times_worn": 6,
+                "last_worn": "2026-03-05",
+                "added_date": "2025-10-15",
+                "image_placeholder": "umbrella",
+                "notes": ""
+            }
+        ]
+    },
+    "admin": {
+        "items": [
+            {
+                "id": "A001",
+                "name": "Black Formal Suit",
+                "type": "suit",
+                "category": "set",
+                "fabric": "wool blend",
+                "color": "black",
+                "tags": [
+                    "formal",
+                    "office",
+                    "business"
+                ],
+                "weather_suitability": [
+                    "cool",
+                    "cold"
+                ],
+                "rain_suitable": false,
+                "times_worn": 40,
+                "last_worn": "2026-03-26",
+                "added_date": "2024-01-01",
+                "image_placeholder": "suit",
+                "notes": "Primary work attire"
+            }
+        ]
+    }
+}
