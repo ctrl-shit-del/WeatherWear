@@ -24,7 +24,7 @@ from modules.recommendation_engine import recommend
 # App Setup
 # ---------------------------------------------------------------------------
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="WeatherWear", static_folder="WeatherWear", static_url_path="")
 app.secret_key = os.environ.get("SECRET_KEY", "sors_super_secret_2026_key")
 
 # Enable CORS for local file testing

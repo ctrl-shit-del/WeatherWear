@@ -143,3 +143,19 @@ const Wardrobe = (() => {
     TYPES, SEASONS, FABRICS
   };
 })();
+
+// --- Auto-populate mock wardrobe if empty ---
+(function initMockWardrobe() {
+  if (Wardrobe.getAll().length === 0) {
+    const mockItems = [
+      { name: 'Classic White Tee', type: 'top', season: 'all', color: '#ffffff', fabric: 'organic cotton', image: 'https://loremflickr.com/300/400/tshirt?random=1' },
+      { name: 'Blue Denim Jeans', type: 'bottom', season: 'all', color: '#1a3b5c', fabric: 'denim', image: 'https://loremflickr.com/300/400/jeans?random=2' },
+      { name: 'Black Leather Jacket', type: 'outer', season: 'autumn', color: '#000000', fabric: 'leather', image: 'https://loremflickr.com/300/400/jacket?random=3' },
+      { name: 'Grey Wool Sweater', type: 'top', season: 'winter', color: '#888888', fabric: 'merino wool', image: 'https://loremflickr.com/300/400/sweater?random=4' },
+      { name: 'Khaki Chinos', type: 'bottom', season: 'spring', color: '#c3b091', fabric: 'cotton', image: 'https://loremflickr.com/300/400/chinos?random=5' },
+      { name: 'White Sneakers', type: 'shoes', season: 'all', color: '#ffffff', fabric: 'leather', image: 'https://loremflickr.com/300/400/sneakers?random=6' },
+      { name: 'Navy Blue Suit', type: 'suit', season: 'all', color: '#000080', fabric: 'wool', image: 'https://loremflickr.com/300/400/suit?random=7' }
+    ];
+    mockItems.forEach(item => Wardrobe.add(item));
+  }
+})();
