@@ -637,7 +637,7 @@
     await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
     typingEl.remove();
 
-    const { response } = Stylist.chat(message);
+    const { response } = await Stylist.chat(message);
     appendChatBubble(response, 'stylist');
   }
 

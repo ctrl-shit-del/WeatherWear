@@ -1,0 +1,18 @@
+# SORS Environment Files
+.env
+.env.example (if you prefer)
+*.env
+
+# Python Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ML Models
+models/*.joblib
+models/*.pkl
+
+# OS stuff
+.DS_Store
+Thumbs.db

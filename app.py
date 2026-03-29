@@ -5,6 +5,9 @@ Flask Backend Application
 
 import json
 import os
+from dotenv import load_dotenv
+load_dotenv() # Load from .env file FIRST
+
 from functools import wraps
 from datetime import datetime
 
@@ -12,6 +15,9 @@ from flask import (
     Flask, render_template, request, jsonify,
     session, redirect, url_for, g, make_response
 )
+
+from dotenv import load_dotenv
+load_dotenv() # Load from .env file
 
 from modules.weather import get_weather
 from modules.wardrobe import (
@@ -207,12 +213,13 @@ def api_get_stylist_advice():
     data = request.get_json() or {}
     weather_data = data.get("weather", {})
     outfit_pick = data.get("outfit", {})
+    user_message = data.get("message") or data.get("query")
 
     if not weather_data or not outfit_pick:
         return jsonify({"error": "Weather and Outfit data required"}), 400
 
     # Call Gemini to get "AI Stylist" commentary
-    stylist_message = get_conversational_advice(weather_data, outfit_pick)
+    stylist_message = get_conversational_advice(weather_data, outfit_pick, user_message)
 
     return jsonify({
         "success": True,
