@@ -189,6 +189,13 @@ const Analytics = (() => {
 
   function renderOutfitHistory() {
     const history = Storage.get('outfit_history', []);
+    const prefs = Storage.get('user_prefs', { units: 'metric' });
+    const toDisplayTemp = (celsius) => {
+      if ((prefs.units || 'metric') === 'imperial') {
+        return Math.round((celsius * 9) / 5 + 32) + '°F';
+      }
+      return Math.round(celsius) + '°C';
+    };
     const container = document.getElementById('outfit-history-timeline');
     if (!container) return;
     if (!history.length) {
@@ -205,7 +212,7 @@ const Analytics = (() => {
           <div class="timeline-dot"></div>
           <div class="timeline-content">
             <span class="timeline-outfit">${outfit?.name || 'Unknown Outfit'}</span>
-            <span class="timeline-weather">${entry.weather?.temp}°C · ${entry.weather?.condition}</span>
+            <span class="timeline-weather">${toDisplayTemp(entry.weather?.temp || 0)} · ${entry.weather?.condition}</span>
           </div>
         </div>`;
     }).join('');

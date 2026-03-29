@@ -106,7 +106,7 @@ def api_login():
 
     if user and user.get("password") == password:
         session["user_id"] = username
-        session.permanent = True
+        session.permanent = False
         return jsonify({
             "success": True,
             "user": {

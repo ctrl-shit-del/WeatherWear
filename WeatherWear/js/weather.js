@@ -172,7 +172,7 @@ const WeatherService = (() => {
   }
 
   async function getWeather(city, apiKey, units = 'metric', useGeolocation = false) {
-    const cacheKey = `weather_${city || 'geo'}`;
+    const cacheKey = `weather_${city || 'geo'}_${units}`;
     const cached = Storage.get(cacheKey);
     if (cached) return { ...cached, fromCache: true };
 

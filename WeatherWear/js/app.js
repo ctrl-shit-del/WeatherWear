@@ -85,6 +85,27 @@
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
+  function cToF(celsius) {
+    return Math.round((celsius * 9) / 5 + 32);
+  }
+
+  function formatTemp(celsius) {
+    const isImperial = state.userPrefs.units === 'imperial';
+    const value = isImperial ? cToF(celsius) : Math.round(celsius);
+    const unit = isImperial ? 'F' : 'C';
+    return `${value}°${unit}`;
+  }
+
+  function formatTempValue(celsius) {
+    const isImperial = state.userPrefs.units === 'imperial';
+    return isImperial ? cToF(celsius) : Math.round(celsius);
+  }
+
+  function clearWeatherCache() {
+    Storage.clear('weather_');
+    Storage.remove('last_weather');
+  }
+
   function showToast(msg, type = 'info', duration = 3000) {
     const tc = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -133,7 +154,7 @@
     }
     if (page === 'wardrobe') renderWardrobePage();
     if (page === 'stylist' && state.weather) {
-      Stylist.setContext(state.weather, state.recommendations);
+      Stylist.setContext(state.weather, state.recommendations, state.userPrefs.calendarEvents, state.userPrefs);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -146,7 +167,7 @@
       const weather = await WeatherService.getWeather(
         city || state.userPrefs.defaultCity,
         state.userPrefs.apiKey,
-        state.userPrefs.units,
+        'metric',
         useGeo
       );
       state.weather = weather;
@@ -170,7 +191,7 @@
       state.recommendations = recs;
 
       // Update stylist context
-      Stylist.setContext(weather, recs, state.userPrefs.calendarEvents);
+      Stylist.setContext(weather, recs, state.userPrefs.calendarEvents, state.userPrefs);
 
       renderDashboard();
       showToast(`Weather updated for ${weather.city}`, 'success', 2000);
@@ -182,7 +203,7 @@
       state.weather = mock;
       const recs = await RecommendationEngine.getRecommendations(mock, state.userPrefs);
       state.recommendations = recs;
-      Stylist.setContext(mock, recs);
+      Stylist.setContext(mock, recs, null, state.userPrefs);
       renderDashboard();
     } finally {
       setLoading(false);
@@ -203,9 +224,9 @@
 
     // Weather data
     set('wd-city', `📍 ${w.city}, ${w.country}`);
-    set('wd-temp', `${w.temp}°${state.userPrefs.units === 'metric' ? 'C' : 'F'}`);
+    set('wd-temp', formatTemp(w.temp));
     set('wd-condition', w.condition);
-    set('wd-feels', `Feels like ${w.feels_like}°`);
+    set('wd-feels', `Feels like ${formatTemp(w.feels_like)}`);
     set('wd-humidity', `${w.humidity}%`);
     set('wd-wind', `${w.wind_speed} km/h ${WeatherService.getWindDirection(w.wind_deg)}`);
     set('wd-uv', Math.round(w.uv_index || 0));
@@ -427,8 +448,8 @@
         <div class="forecast-day-name">${day.day}</div>
         <div class="forecast-icon">${weatherIcons[day.condition] || '🌤️'}</div>
         <div class="forecast-temps">
-          <span class="forecast-high">${day.temp_max}°</span>
-          <span class="forecast-low">${day.temp_min}°</span>
+          <span class="forecast-high">${formatTempValue(day.temp_max)}°</span>
+          <span class="forecast-low">${formatTempValue(day.temp_min)}°</span>
         </div>
         ${day.precip_prob > 20 ? `<div class="forecast-rain">💧 ${day.precip_prob}%</div>` : ''}
       </div>
@@ -636,6 +657,7 @@
   }
 
   function saveSettings() {
+    const previousUnits = state.userPrefs.units || 'metric';
     state.userPrefs = {
       apiKey: document.getElementById('setting-api-key')?.value || '',
       units: document.getElementById('setting-units')?.value || 'metric',
@@ -644,6 +666,11 @@
       sustainabilityMode: document.getElementById('setting-eco-mode')?.checked || false,
     };
     Storage.set('user_prefs', state.userPrefs);
+
+    if (previousUnits !== state.userPrefs.units) {
+      clearWeatherCache();
+    }
+
     showToast('Settings saved!', 'success');
     // Refresh weather with new settings
     if (state.weather) fetchAndRenderWeather(state.weather.city);
@@ -782,7 +809,7 @@
       state.weather = lastWeather;
       RecommendationEngine.getRecommendations(lastWeather, state.userPrefs).then(recs => {
         state.recommendations = recs;
-        Stylist.setContext(lastWeather, recs);
+        Stylist.setContext(lastWeather, recs, state.userPrefs.calendarEvents, state.userPrefs);
         renderDashboard();
       });
     } else {

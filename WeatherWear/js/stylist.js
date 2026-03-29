@@ -7,6 +7,7 @@ const Stylist = (() => {
   let _currentWeather = null;
   let _currentRecommendations = null;
   let _currentCalendar = null;
+  let _userPrefs = Storage.get('user_prefs', { units: 'metric' });
   let _conversationHistory = Storage.get('stylist_history', []);
 
   const INTENTS = [
@@ -52,10 +53,21 @@ const Stylist = (() => {
     return items.find(item => lower.includes(item)) || null;
   }
 
+  function cToF(celsius) {
+    return Math.round((celsius * 9) / 5 + 32);
+  }
+
+  function formatTemp(celsius) {
+    const isImperial = (_userPrefs?.units || 'metric') === 'imperial';
+    const value = isImperial ? cToF(celsius) : Math.round(celsius);
+    const unit = isImperial ? 'F' : 'C';
+    return `${value}°${unit}`;
+  }
+
   function getWeatherContext() {
     if (!_currentWeather) return 'the current weather conditions';
     const { temp, feels_like, condition_main, humidity, wind_speed } = _currentWeather;
-    return `${temp}°C (feels like ${feels_like}°C), ${condition_main.toLowerCase()} skies, ${humidity}% humidity and ${wind_speed} km/h winds`;
+    return `${formatTemp(temp)} (feels like ${formatTemp(feels_like)}), ${condition_main.toLowerCase()} skies, ${humidity}% humidity and ${wind_speed} km/h winds`;
   }
 
   function generateResponse(intent, message) {
@@ -83,7 +95,7 @@ Right now, the weather is **${getWeatherContext()}**. What would you like to kno
 
 🌡️ **Weather**: ${getWeatherContext()}
 
-The outfit is designed for **${outfit.temp_range[0]}°C to ${outfit.temp_range[1]}°C** ${condPhrase}. Here's the breakdown:
+The outfit is designed for **${formatTemp(outfit.temp_range[0])} to ${formatTemp(outfit.temp_range[1])}** ${condPhrase}. Here's the breakdown:
 
 ${items}
 
@@ -148,7 +160,7 @@ Want more alternatives, or should I explain why this one works?`;
 
 💡 **Style tip:** ${ev.tip}
 
-This accounts for the **${weather?.temp || 'current'}°C** temperature ${condPhrase}. Would you like shopping links for any of these pieces?`;
+This accounts for the **${weather ? formatTemp(weather.temp) : 'current temperature'}** ${condPhrase}. Would you like shopping links for any of these pieces?`;
         }
         return `I can help with event-specific outfits! Try asking:
 - "What to wear to a meeting?"
@@ -160,7 +172,7 @@ This accounts for the **${weather?.temp || 'current'}°C** temperature ${condPhr
         if (!weather) return "I don't have weather data yet. Please search for a city on the dashboard!";
         return `📍 **Current Weather Summary:**
 
-🌡️ Temperature: **${weather.temp}°C** (feels like ${weather.feels_like}°C)
+🌡️ Temperature: **${formatTemp(weather.temp)}** (feels like ${formatTemp(weather.feels_like)})
 💧 Humidity: **${weather.humidity}%**
 💨 Wind: **${weather.wind_speed} km/h**
 🌡️ Condition: **${weather.condition}**
@@ -252,10 +264,11 @@ All of these pair well with the rest of today's suggested outfit. Want more deta
     return { intent, response };
   }
 
-  function setContext(weather, recommendations, calendarEvents = null) {
+  function setContext(weather, recommendations, calendarEvents = null, userPrefs = null) {
     _currentWeather = weather;
     _currentRecommendations = recommendations;
     _currentCalendar = calendarEvents;
+    if (userPrefs) _userPrefs = userPrefs;
   }
 
   function getHistory() { return _conversationHistory; }

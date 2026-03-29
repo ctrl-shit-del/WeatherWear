@@ -542,9 +542,15 @@
         <div class="section-header">
           <div>
             <div class="section-title">📌 Inspiration Board</div>
-            <div class="section-subtitle">Curated looks tailored to your style and current weather</div>
+            <div class="section-subtitle">Curated Indian looks tailored to your style and current weather</div>
           </div>
           <button class="btn btn-secondary btn-sm" onclick="renderInspirationBoard()">🔄 Shuffle</button>
+        </div>
+
+        <div id="inspiration-audience-toggle" style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px 0;">
+          <button class="wardrobe-filter-btn inspiration-audience-btn active" data-audience="women">Women</button>
+          <button class="wardrobe-filter-btn inspiration-audience-btn" data-audience="men">Men</button>
+          <button class="wardrobe-filter-btn inspiration-audience-btn" data-audience="unisex">Unisex</button>
         </div>
 
         <!-- Masonry Grid Container -->
@@ -906,8 +912,15 @@
     document.querySelector('[data-page="stylist"]').addEventListener('click', () => {
       const w = Storage.get('last_weather');
       if (!w) return;
+      const prefs = Storage.get('user_prefs', { units: 'metric' });
+      const toDisplayTemp = (celsius) => {
+        if ((prefs.units || 'metric') === 'imperial') {
+          return Math.round((celsius * 9) / 5 + 32) + '°F';
+        }
+        return Math.round(celsius) + '°C';
+      };
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-      set('stylist-temp', `${w.temp}° (feels ${w.feels_like}°)`);
+      set('stylist-temp', `${toDisplayTemp(w.temp)} (feels ${toDisplayTemp(w.feels_like)})`);
       set('stylist-cond', w.condition_main);
       set('stylist-humidity', `${w.humidity}%`);
 
