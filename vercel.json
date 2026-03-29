@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/app.py" },
+    { "source": "/(.*)", "destination": "/WeatherWear/$1" }
+  ],
+  "functions": {
+    "app.py": {
+      "runtime": "vercel-python@0.8.0"
+    }
+  }
+}
