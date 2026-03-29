@@ -19,6 +19,7 @@ from modules.wardrobe import (
     update_item, get_analytics, increment_wear
 )
 from modules.recommendation_engine import recommend
+from modules.stylist_ai import get_conversational_advice
 
 # ---------------------------------------------------------------------------
 # App Setup
@@ -195,6 +196,30 @@ def api_recommend():
 
     result = recommend(weather_data, wardrobe, preferences, mode)
     return jsonify({"success": True, **result})
+
+
+@app.route("/api/get_stylist_advice", methods=["POST"])
+@login_required
+def api_get_stylist_advice():
+    """
+    New AI Stylist mode: Combines ML recommendation with LLM conversational advice.
+    """
+    data = request.get_json() or {}
+    weather_data = data.get("weather", {})
+    outfit_pick = data.get("outfit", {})
+
+    if not weather_data or not outfit_pick:
+        return jsonify({"error": "Weather and Outfit data required"}), 400
+
+    # Call Gemini to get "AI Stylist" commentary
+    stylist_message = get_conversational_advice(weather_data, outfit_pick)
+
+    return jsonify({
+        "success": True,
+        "stylist_message": stylist_message,
+        "outfit": outfit_pick,
+        "weather_context": weather_data
+    })
 
 
 # ---------------------------------------------------------------------------

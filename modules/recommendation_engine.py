@@ -18,8 +18,21 @@ Ranking factors:
 import json
 import os
 import math
+import joblib
+import pandas as pd
 
 OUTFIT_KB_FILE = os.path.join(os.path.dirname(__file__), "../data/outfit_knowledge.json")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "../models/comfort_model.joblib")
+ENCODER_PATH = os.path.join(os.path.dirname(__file__), "../models/temp_range_encoder.joblib")
+
+# Load ML model and encoder
+try:
+    model = joblib.load(MODEL_PATH)
+    encoder = joblib.load(ENCODER_PATH)
+    ML_ENABLED = True
+except Exception as e:
+    print(f"⚠️ Failed to load ML model: {e}. Falling back to rule-based engine.")
+    ML_ENABLED = False
 
 
 def _load_kb() -> dict:
@@ -37,8 +50,64 @@ def _temp_to_range(temp: float) -> str:
 
 def _compute_comfort_score(outfit: dict, weather: dict, preferences: dict) -> float:
     """
-    Score an outfit from 0..10 based on weather match and preferences.
+    Score an outfit from 0..10 based on ML model prediction or rule-based fallback.
     """
+    if not ML_ENABLED:
+        # Fallback to rule-based if ML model fails to load
+        return _compute_comfort_score_rule_based(outfit, weather, preferences)
+
+    # Prepare features for ML model
+    # Features order must match train_model.py:
+    # [temp, humidity, wind_speed, rain_prob, uv_index, outfit_temp_range, is_rain_suitable, 
+    #  is_uv_protection, is_wind_resistant, layering_count, occasion_match, sustainability_score]
+    
+    temp = weather.get("temp", 20)
+    humidity = weather.get("humidity", 50)
+    wind_speed = weather.get("wind_speed", 10)
+    rain_prob = weather.get("rain_prob", 0)
+    uv_index = weather.get("uv_index", 3)
+    
+    outfit_temp_range = outfit.get("temp_range", "cool")
+    is_rain_suitable = 1 if outfit.get("rain_suitable") else 0
+    is_uv_protection = 1 if outfit.get("uv_protection") else 0
+    is_wind_resistant = 1 if outfit.get("wind_resistant") else 0
+    layering_count = outfit.get("layering_count", 1)
+    
+    # Occasion match logic
+    user_occasion = preferences.get("occasion", "casual")
+    outfit_occasions = outfit.get("occasion", [])
+    occasion_match = 1 if user_occasion in outfit_occasions else 0
+    
+    # Sustainability
+    sustainability_score = outfit.get("sustainability_score", 5)
+    
+    # Encode temp range using the saved encoder
+    try:
+        encoded_range = encoder.transform([outfit_temp_range])[0]
+    except:
+        encoded_range = 0 # Default fallback
+        
+    features = pd.DataFrame([{
+        "temp": temp,
+        "humidity": humidity,
+        "wind_speed": wind_speed,
+        "rain_prob": rain_prob,
+        "uv_index": uv_index,
+        "outfit_temp_range": encoded_range,
+        "is_rain_suitable": is_rain_suitable,
+        "is_uv_protection": is_uv_protection,
+        "is_wind_resistant": is_wind_resistant,
+        "layering_count": layering_count,
+        "occasion_match": occasion_match,
+        "sustainability_score": sustainability_score
+    }])
+    
+    prediction = model.predict(features)[0]
+    return round(max(1.0, min(10.0, float(prediction))), 1)
+
+
+def _compute_comfort_score_rule_based(outfit: dict, weather: dict, preferences: dict) -> float:
+    """Original rule-based logic preserved as fallback."""
     score = outfit.get("comfort_base", 7.0)
     temp = weather.get("temp", 20)
     rain_prob = weather.get("rain_prob", 0)
