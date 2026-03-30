@@ -1,77 +1,42 @@
-from google import genai
-import os
-import json
-
-# Configure Gemini API Client
-# The user must set GOOGLE_API_KEY environment variable
-API_KEY = os.environ.get("GOOGLE_API_KEY")
-client = genai.Client(api_key=API_KEY) if API_KEY else None
-
-# Using gemini-2.0-flash as verified by the model diagnostic for your API key.
-MODEL_NAME = "gemini-2.0-flash"
-
-SYSTEM_PROMPT = """
-You are an expert, friendly fashion stylist. Your goal is to provide conversational, human-like advice 
-based on a specific weather report, a recommended outfit, and optional user questions.
-
-Core Pillars (Prioritize these if matching):
-1. 🎨 **Rationale**: "Why this outfit?" - Explain comfort based on fabric/layers vs. current weather.
-2. 🔄 **Swap/Alternative**: "No jeans / What instead?" - Suggest 2-3 specific stylish alternatives for any item.
-3. 📅 **Events/Occasion**: "Work meeting / Job interview / Wedding" - Suggest context-specific style adaptations (e.g., retro student, formal, smart-casual).
-4. 🌿 **Sustainability**: "Eco check" - Discuss the sustainability of the items (fabrics, longevity).
-5. 🛍️ **Shopping**: "Shopping links" - Mention generic brand styles or stores where to find similar pieces. 
-6. 🌡️ **Weather Intelligence**: "Today's weather" - A stylish summary of the conditions.
-
-Personality Rules:
-1. Always reference the current weather context.
-2. Keep it concise (under 75 words).
-3. If the user asks for a specific "Vibe" (e.g., "Retro Student"), fully embrace that style while keeping it weather-appropriate.
-4. Output in plain text (no markdown links).
-"""
-
-def get_client():
-    """Lazy initialization of the Gemini client."""
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    if not api_key:
-        return None
-    try:
-        return genai.Client(api_key=api_key)
-    except Exception as e:
-        print(f"Error initializing Gemini client: {e}")
-        return None
-
-def get_conversational_advice(weather: dict, outfit: dict, user_query: str = None) -> str:
+﻿def get_conversational_advice(weather: dict, outfit: dict, user_query: str = None) -> str:
     """
-    Calls the new Google GenAI SDK to get conversational stylist advice.
+    Python-only rule-based stylist, no external AI APIs.
     """
-    client = get_client()
-    if not client:
-        return "Hey! I'm your AI Stylist. I'd love to help, but my API key is missing. Set GOOGLE_API_KEY to unlock me!"
-
-    try:
-        prompt_parts = [
-            f"Current Weather: {json.dumps(weather)}",
-            f"Recommended Outfit: {json.dumps(outfit)}"
-        ]
-        
-        if user_query:
-            prompt_parts.append(f"User Question: '{user_query}'")
+    temp = weather.get('temp', 25)
+    condition = weather.get('condition_main', weather.get('condition', 'clear'))
+    outfit_name = outfit.get('name', 'this outfit')
+    
+    query = (user_query or "").lower()
+    
+    # Event-based rules
+    if "class" in query or "school" in query or "college" in query or "university" in query:
+        return f"For class, comfort is key! Given it's {temp}°C today, {outfit_name} works perfectly. Consider a comfortable pair of sneakers and layer up if your lecture halls are air-conditioned."
+    elif "funeral" in query:
+        return "For a funeral, it is respectful to wear formal, dark, and muted clothing. A dark suit or a dark, conservative dress is appropriate. Avoid flashy accessories."
+    elif "wedding" in query:
+        return f"For a wedding, a formal suit or elegant dress is perfect. Since it's {temp}°C, make sure the fabric matches the weather! Don't wear white unless explicitly asked."
+    elif "party" in query or "club" in query:
+        return "For a party, you can be more expressive! A smart-casual look or a trendy statement piece will make you stand out. Wear comfortable shoes if you plan to dance."
+    elif "meeting" in query or "interview" in query or "work" in query or "office" in query:
+        return f"For a professional setting, a smart-casual or formal look is best. {outfit_name} could be a good base, but ensure you have a neat blazer or tailored trousers."
+    elif "gym" in query or "workout" in query or "exercise" in query:
+        return "For the gym, moisture-wicking and flexible clothing is essential. Pair athletic shorts or leggings with a breathable top and good training shoes."
+    elif "date" in query:
+        return f"For a date, smart casual is usually a safe and stylish bet. Given the {condition} weather at {temp}°C, {outfit_name} is a solid start. Just make sure it looks neat and fits well!"
+    
+    # Needs/intent-based rules
+    elif "swap" in query or "alternative" in query or "instead" in query:
+        return f"If you want to change up {outfit_name}, try swapping your top for a different color, or choosing a different style of footwear that still works for {temp}°C."
+    elif "why" in query or "reason" in query:
+        return f"This outfit ({outfit_name}) is recommended because the temperature is {temp}°C with {condition} conditions, making the selected fabrics and layers optimal for your comfort."
+    
+    # Weather-based generic fallback
+    else:
+        if "snow" in condition.lower() or temp < 5:
+            return f"It's freezing ({temp}°C) today! Layer up heavily. {outfit_name} is a base, but make sure you have a heavy coat, scarf, and gloves."
+        elif "rain" in condition.lower() or "drizzle" in condition.lower():
+            return f"It looks like rain today. Make sure to pair {outfit_name} with a waterproof jacket or grab an umbrella before you head out!"
+        elif temp > 30:
+            return f"It's quite hot today ({temp}°C). {outfit_name} should be lightweight and breathable. Drink plenty of water and wear sunglasses!"
         else:
-            prompt_parts.append("Prompt: Give me a quick stylish overview and one swap suggestion!")
-
-        prompt = "\n".join(prompt_parts)
-        
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            config={'system_instruction': SYSTEM_PROMPT},
-            contents=prompt
-        )
-        
-        return response.text.strip()
-    except Exception as e:
-        print(f"Error calling Gemini SDK: {e}")
-        return f"Hello! It's a {weather.get('temp')}°C day. This {outfit.get('name')} is a solid choice. If you want a change, try swapping your footwear for something more breathable!"
-    except Exception as e:
-        print(f"Error calling Gemini API: {e}")
-        return f"Hello! It looks like a {weather.get('temp')}°C day. This {outfit.get('name')} is a solid choice because it matches the conditions, but I'm having a bit of trouble connecting to my creative brain right now!"
-
+            return f"Hello! It's a nice {temp}°C day with {condition} skies. '{outfit_name}' is a solid choice. Let me know if you are dressing for a specific event like a meeting, class, or party!"

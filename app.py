@@ -204,21 +204,25 @@ def api_recommend():
     return jsonify({"success": True, **result})
 
 
-@app.route("/api/get_stylist_advice", methods=["POST"])
-@login_required
+@app.route("/api/get_stylist_advice", methods=["POST", "OPTIONS"])
 def api_get_stylist_advice():
     """
     New AI Stylist mode: Combines ML recommendation with LLM conversational advice.
     """
+    if request.method == "OPTIONS":
+        return make_response()
+    
     data = request.get_json() or {}
     weather_data = data.get("weather", {})
     outfit_pick = data.get("outfit", {})
     user_message = data.get("message") or data.get("query")
 
-    if not weather_data or not outfit_pick:
-        return jsonify({"error": "Weather and Outfit data required"}), 400
+    if not weather_data:
+        weather_data = {"temp": 25, "condition": "clear"}
+    if not outfit_pick:
+        outfit_pick = {"name": "Your favorite comfortable clothes", "items": []}
 
-    # Call Gemini to get "AI Stylist" commentary
+    # Call Gemini/Groq to get "AI Stylist" commentary
     stylist_message = get_conversational_advice(weather_data, outfit_pick, user_message)
 
     return jsonify({

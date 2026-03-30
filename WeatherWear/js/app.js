@@ -634,10 +634,10 @@
 
     // Show typing
     const typingEl = showTypingIndicator();
-    await new Promise(r => setTimeout(r, 600 + Math.random() * 800));
-    typingEl.remove();
-
+    // No artificial delay needed if we are fetching from API
+    
     const { response } = await Stylist.chat(message);
+    typingEl.remove();
     appendChatBubble(response, 'stylist');
   }
 
