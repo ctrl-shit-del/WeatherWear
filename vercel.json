@@ -1,12 +1,17 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/app.py" },
-    { "source": "/(.*)", "destination": "/WeatherWear/$1" }
-  ],
-  "functions": {
-    "app.py": {
-      "runtime": "vercel-python@0.8.0"
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "WeatherWear/**",
+      "use": "@vercel/static"
     }
-  }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/app.py" },
+    { "src": "/(.*)", "dest": "/WeatherWear/$1" }
+  ]
 }
